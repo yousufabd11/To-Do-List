@@ -17,17 +17,16 @@ function Todo() {
         fetchTodoList();
     }, []);
 
-    const fetchTodoList = () => {
+    const fetchTodoList = async () => {
         setLoading(true);
-        axios.get('http://127.0.0.1:3001/getTodoList')
-            .then(result => {
-                setTodoList(result.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.log(err);
-                setLoading(false);
-            });
+        try {
+            const result = await axios.get('http://127.0.0.1:3001/getTodoList');
+            setTodoList(result.data);
+        } catch (err) {
+            console.error("Failed to fetch todo list:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Function to toggle the editable state for a specific row
@@ -47,26 +46,26 @@ function Todo() {
     };
 
     // Function to add a task to the database
-    const addTask = (e) => {
+    const addTask = async (e) => {
         e.preventDefault();
         if (!newTask || !newStatus || !newDeadline) {
             alert("All fields must be filled out.");
             return;
         }
 
-        axios.post('http://127.0.0.1:3001/addTodoList', { task: newTask, status: newStatus, deadline: newDeadline })
-            .then(res => {
-                console.log(res);
-                setTodoList([...todoList, res.data]); // Update the state instead of reloading
-                setNewTask("");
-                setNewStatus("");
-                setNewDeadline("");
-            })
-            .catch(err => console.log(err));
+        try {
+            const res = await axios.post('http://127.0.0.1:3001/addTodoList', { task: newTask, status: newStatus, deadline: newDeadline });
+            setTodoList([...todoList, res.data]); // Update the state instead of reloading
+            setNewTask("");
+            setNewStatus("");
+            setNewDeadline("");
+        } catch (err) {
+            console.error("Failed to add task:", err);
+        }
     };
 
     // Function to save edited data to the database
-    const saveEditedTask = (id) => {
+    const saveEditedTask = async (id) => {
         const editedData = {
             task: editedTask,
             status: editedStatus,
@@ -79,26 +78,26 @@ function Todo() {
             return;
         }
 
-        axios.post('http://127.0.0.1:3001/updateTodoList/' + id, editedData)
-            .then(result => {
-                console.log(result);
-                setTodoList(todoList.map(task => (task._id === id ? result.data : task))); // Update the state with the edited task
-                setEditableId(null);
-                setEditedTask("");
-                setEditedStatus("");
-                setEditedDeadline(""); // Clear the edited deadline
-            })
-            .catch(err => console.log(err));
+        try {
+            const result = await axios.post(`http://127.0.0.1:3001/updateTodoList/${id}`, editedData);
+            setTodoList(todoList.map(task => (task._id === id ? result.data : task))); // Update the state with the edited task
+            setEditableId(null);
+            setEditedTask("");
+            setEditedStatus("");
+            setEditedDeadline(""); // Clear the edited deadline
+        } catch (err) {
+            console.error("Failed to save edited task:", err);
+        }
     };
 
     // Function to delete a task from the database
-    const deleteTask = (id) => {
-        axios.delete('http://127.0.0.1:3001/deleteTodoList/' + id)
-            .then(result => {
-                console.log(result);
-                setTodoList(todoList.filter(task => task._id !== id)); // Update the state after deletion
-            })
-            .catch(err => console.log(err));
+    const deleteTask = async (id) => {
+        try {
+            await axios.delete(`http://127.0.0.1:3001/deleteTodoList/${id}`);
+            setTodoList(todoList.filter(task => task._id !== id)); // Update the state after deletion
+        } catch (err) {
+            console.error("Failed to delete task:", err);
+        }
     };
 
     return (
@@ -216,7 +215,7 @@ function Todo() {
                                 onChange={(e) => setNewDeadline(e.target.value)}
                             />
                         </div>
-                        <button onClick={addTask} className="btn btn-success btn-sm">
+                        <button type="submit" className="btn btn-success btn-sm">
                             Add Task
                         </button>
                     </form>

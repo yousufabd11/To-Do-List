@@ -19,12 +19,10 @@ if (!mongoURI) {
     process.exit(1); // Exit the process with an error
 }
 
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log("Connected to MongoDB"))
-.catch((err) => console.error("Failed to connect to MongoDB", err));
+mongoose.connect(mongoURI)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((err) => console.error("Failed to connect to MongoDB", err));
+
 
 // Check for database connection errors
 mongoose.connection.on("error", (error) => {
