@@ -68,6 +68,10 @@ app.delete("/deleteTodoList/:id", (req, res) => {
         .catch((err) => res.status(500).json({ error: err.message }));
 });
 
+app.use(express.static("./frontend/build"));
+app.get("*", (req, res) =>{
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"))
+})
 
 const port = process.env.PORT || 3000; // Use the port from the .env file or default to 3000
 
